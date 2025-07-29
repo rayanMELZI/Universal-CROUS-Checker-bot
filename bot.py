@@ -4,6 +4,10 @@ from utils import add_log, send_message, send_keyboard, save_user
 
 def handle_webhook():
     data = request.json
+    
+    print("✅ Webhook déclenché")
+    print(data)
+    
     try:
         if "message" in data:
             message = data["message"]
