@@ -5,14 +5,14 @@ from utils import add_log, send_message, send_keyboard, save_user
 def handle_webhook():
     data = request.json
     print("✅ Webhook reçu", flush=True)
-    print(json.dumps(data, indent=2), flush=True)  # Affiche le contenu de la requête
+    print(json.dumps(data, indent=2), flush=True)
 
     try:
         if "message" in data:
             message = data["message"]
             text = message.get("text", "")
             chat_id = str(message["chat"]["id"])
-            print(f"📩 Message: {text} — de {chat_id}")
+            print(f"📩 Message: {text} — de {chat_id}", flush=True)
 
             if text == "/start":
                 send_keyboard(chat_id)
@@ -26,5 +26,5 @@ def handle_webhook():
                 send_message(chat_id, "❓ Choisis une ville depuis le menu.")
         return "ok"
     except Exception as e:
-        print(f"❌ Erreur dans handle_webhook: {e}")
+        print(f"❌ Erreur dans handle_webhook: {e}", flush=True)
         return "error"
