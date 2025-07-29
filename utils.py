@@ -13,21 +13,24 @@ def send_message(chat_id, text):
     requests.post(url, data={"chat_id": chat_id, "text": text})
 
 def send_keyboard(chat_id):
-    token = os.getenv("MAIN_TELEGRAM_TOKEN")
+    token = os.getenv("MAIN_TELEGRAM_TOKEN")  # Assure-toi que c'est bien défini dans .env
     url = f"https://api.telegram.org/bot{token}/sendMessage"
+
+    keyboard = {
+        "keyboard": [[{"text": "/lyon"}], [{"text": "/paris"}]],
+        "resize_keyboard": True,
+        "one_time_keyboard": False
+    }
+
     payload = {
         "chat_id": chat_id,
-        "text": "📍 Quelle ville CROUS veux-tu surveiller ?",
-        "reply_markup": {
-            "keyboard": [
-                [{"text": "/lyon"}],
-                [{"text": "/paris"}]
-            ],
-            "resize_keyboard": True,
-            "one_time_keyboard": True
-        }
+        "text": "👋 Salut ! Quelle ville CROUS veux-tu surveiller ?",
+        "reply_markup": json.dumps(keyboard)
     }
-    requests.post(url, json=payload)
+
+    r = requests.post(url, data=payload)
+    print("📲 Clavier envoyé", flush=True)
+    print(r.text, flush=True)
 
 def save_user(chat_id, ville):
     users = []
