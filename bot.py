@@ -4,8 +4,8 @@ from utils import add_log, send_message, send_keyboard, save_user
 
 def handle_webhook():
     data = request.json
-    print("✅ Webhook reçu")
-    print(json.dumps(data, indent=2))  # Affiche le contenu de la requête
+    print("✅ Webhook reçu", flush=True)
+    print(json.dumps(data, indent=2), flush=True)  # Affiche le contenu de la requête
 
     try:
         if "message" in data:
