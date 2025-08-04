@@ -1,30 +1,54 @@
-import os, json, requests
-from flask import request
-from utils import add_log, send_message, send_keyboard, save_user
+from telegram import Update
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    MessageHandler,
+    ContextTypes,
+    filters,
+)
+import os
+from dotenv import load_dotenv
 
-def handle_webhook():
-    data = request.json
-    print("✅ Webhook reçu", flush=True)
-    print(json.dumps(data, indent=2), flush=True)
+load_dotenv()
+TOKEN = os.getenv("TELEGRAM_TOKEN")
 
-    try:
-        if "message" in data:
-            message = data["message"]
-            text = message.get("text", "")
-            chat_id = str(message["chat"]["id"])
-            print(f"📩 Message: {text} — de {chat_id}", flush=True)
+app_bot = Application.builder().token(TOKEN).build()
 
-            if text == "/start":
-                send_keyboard(chat_id)
-            elif text.lower() == "/lyon":
-                save_user(chat_id, "Lyon")
-                send_message(chat_id, "✅ Tu recevras les alertes CROUS pour Lyon.")
-            elif text.lower() == "/paris":
-                save_user(chat_id, "Paris")
-                send_message(chat_id, "✅ Tu recevras les alertes CROUS pour Paris.")
-            else:
-                send_message(chat_id, "❓ Choisis une ville depuis le menu.")
-        return "ok"
-    except Exception as e:
-        print(f"❌ Erreur dans handle_webhook: {e}", flush=True)
-        return "error"
+
+async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("👋 Bonjour ! Je suis un bot qui peut surveiller les logements CROUS dans plusieurs villes. Tape /help pour plus d'infos.")
+
+
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("ℹ️ Je surveille les logements CROUS pour vous. Choisissez une ville et je vous enverrai une alerte dès qu'un logement est dispo !")
+
+
+def handle_response(text: str) -> str:
+    processed = text.lower()
+
+    if "bonjour" in processed or "salut" in processed:
+        return "👋 Salut !"
+    if "merci" in processed:
+        return "Avec plaisir ! 😊"
+    return "Désolé, je n'ai pas compris. Essayez une commande comme /start ou /help."
+
+
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text
+    chat_id = update.message.chat.id
+    print(f"📩 Message reçu de {chat_id}: {text}", flush=True)
+
+    response = handle_response(text)
+    await update.message.reply_text(response)
+
+
+async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
+    print(f"⚠️ Erreur : {context.error}", flush=True)
+
+
+# Ajoute tous les handlers
+def setup_handlers(app):
+    app.add_handler(CommandHandler("start", start_command))
+    app.add_handler(CommandHandler("help", help_command))
+    app.add_handler(MessageHandler(filters.TEXT, handle_message))
+    app.add_error_handler(error_handler)
